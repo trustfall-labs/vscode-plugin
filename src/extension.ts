@@ -17,6 +17,9 @@ function groupBy<T, K extends string>(list: T[], keyGetter: (obj: T) => K) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  //Create output channel
+  let outputChannel = vscode.window.createOutputChannel("TrustfallLinter");
+
   let diagnosticCollection =
     vscode.languages.createDiagnosticCollection("trustfall-linter");
 
@@ -209,17 +212,29 @@ export function activate(context: vscode.ExtensionContext) {
   };
 
   vscode.workspace.onDidChangeTextDocument(
-    (event) => doCheck(),
+    (event) => {
+      try {
+        doCheck();
+      } catch (e) {
+        outputChannel.append(JSON.stringify(e));
+      }
+    },
     null,
     context.subscriptions
   );
   vscode.window.onDidChangeActiveTextEditor(
-    (event) => doCheck(),
+    (event) => {
+      try {
+        doCheck();
+      } catch (e) {
+        outputChannel.append(JSON.stringify(e));
+      }
+    },
     null,
     context.subscriptions
   );
 
-  vscode.workspace.onWillSaveTextDocument((event) => {
+  const trimExcessWhitespace = () => {
     const isRemoveTrailingSpacesEnabled = vscode.workspace
       .getConfiguration("trustfall-linter")
       .get("removeTrailingSpacesOnSave");
@@ -253,9 +268,21 @@ export function activate(context: vscode.ExtensionContext) {
       wsEdit.set(doc.uri, edits); // give the edits
       vscode.workspace.applyEdit(wsEdit); // apply the edits
     }
+  };
+
+  vscode.workspace.onWillSaveTextDocument((event) => {
+    try {
+      trimExcessWhitespace();
+    } catch (e) {
+      outputChannel.append(JSON.stringify(e));
+    }
   });
 
-  doCheck(); // run on startup
+  try {
+    doCheck(); // run on startup
+  } catch (e) {
+    outputChannel.append(JSON.stringify(e));
+  }
 }
 
 export function deactivate() {}
