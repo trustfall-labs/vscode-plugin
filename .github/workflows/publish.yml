@@ -1,0 +1,85 @@
+name: Publish VSCode extension
+
+on:
+  workflow_call:
+    secrets:
+      OPEN_VSX_TOKEN:
+        required: true
+      VS_MARKETPLACE_TOKEN:
+        required: true
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+
+jobs:
+  publish:
+    name: Publish to Open VSX and VS Marketplace
+    runs-on: ubuntu-latest
+    needs:
+      - should-publish
+    if: needs.should-publish.outputs.is_new_version == 'yes' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+
+      - name: Tag the version
+        id: tag
+        run: |
+          set -euxo pipefail
+          export CURRENT_VERSION="$(.github/workflows/get_current_extension_version.sh)"
+          export TAG_NAME="v$CURRENT_VERSION"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "tag-name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+
+      - uses: taiki-e/create-gh-release-action@v1
+        name: Create GitHub release
+        with:
+          branch: main
+          ref: refs/tags/${{ steps.tag.outputs.tag-name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  should-publish:
+    name: Did version change
+    runs-on: ubuntu-latest
+    outputs:
+      is_new_version: "${{ steps.check.outputs.is_new_version }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+
+      - id: check
+        run: |
+          set +e
+          .github/workflows/is_extension_version_already_tagged.sh
+          export EXIT_CODE="$?"
+          set -e
+          if [[ "$EXIT_CODE" == "7" ]]; then
+            echo 'is_new_version=no' >> $GITHUB_OUTPUT
+          elif [[ "$EXIT_CODE" == "0" ]]; then
+            echo 'is_new_version=yes' >> $GITHUB_OUTPUT
+          else
+            # Unexpected outcome, indicates a bug.
+            exit "$EXIT_CODE"
+          fi
