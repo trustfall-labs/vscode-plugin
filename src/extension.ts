@@ -80,8 +80,10 @@ export function activate(context: vscode.ExtensionContext) {
                       document.positionAt(found),
                       document.positionAt(found + entry[0].length)
                     ),
-                    `You implemented "${entry[0]
-                    }" multiple times for "${typeOrInterface}". This is ${i++} / ${entry[1].length
+                    `You implemented "${
+                      entry[0]
+                    }" multiple times for "${typeOrInterface}". This is ${i++} / ${
+                      entry[1].length
                     }.`,
                     vscode.DiagnosticSeverity.Error
                   )
@@ -138,6 +140,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           }
         }
+      }
 
       if (warnOnMispellings) {
         let lastOutputMispelled = 0;
