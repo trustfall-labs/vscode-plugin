@@ -8,6 +8,7 @@ Just removes excess trailing spaces on a line of a file.
 </details>
 
 <details><summary>warnOnForgetToFullyImplementDependents</summary>
+  
 ![image](https://user-images.githubusercontent.com/43508353/249240744-52ac5465-eb24-4b84-b008-f72b7e0e4132.png)
 ![image](https://user-images.githubusercontent.com/43508353/249240806-bdd88a19-d6f9-4a4b-a31f-827a40439d43.png)
 
