@@ -21,19 +21,27 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.createDiagnosticCollection("trustfall-linter");
 
   const doCheck = () => {
-    const warnOnForgetToFullyImplementDependents = vscode.workspace
-      .getConfiguration("trustfall-linter")
-      .get("warnOnForgetToFullyImplementDependents");
-    if (!warnOnForgetToFullyImplementDependents) {
-      return;
-    }
     let editor = vscode.window.activeTextEditor;
     if (editor) {
       let document = editor.document;
       let text = document.getText();
+      const warnOnForgetToFullyImplementDependents = vscode.workspace
+        .getConfiguration("trustfall-linter")
+        .get("warnOnForgetToFullyImplementDependents");
+      const warnOnForgetToImplementingNonExistant = vscode.workspace
+        .getConfiguration("trustfall-linter")
+        .get("warnOnForgetToImplementingNonExistant");
+      const warnOnMispellings = vscode.workspace
+        .getConfiguration("trustfall-linter")
+        .get("warnOnMispellings");
+      const warnOnNoCoorespondingArgumentForUsedArgument = vscode.workspace
+        .getConfiguration("trustfall-linter")
+        .get("warnOnNoCoorespondingArgumentForUsedArgument");
+      const warnOnImplementSameInterfaceMultipleTimes = vscode.workspace
+        .getConfiguration("trustfall-linter")
+        .get("warnOnImplementSameInterfaceMultipleTimes");
 
       const typeOrInterface2Implemented: Record<string, string[]> = {};
-
       for (const stmt of text.match(regex) ?? []) {
         typeOrInterface2Implemented[
           stmt.match(/^(?:type|interface) ([a-zA-Z0-9_]+) /)![1]
@@ -41,111 +49,118 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       let diagnostics: vscode.Diagnostic[] = [];
-      for (const [typeOrInterface, implemented] of Object.entries(
-        typeOrInterface2Implemented
-      )) {
-        const grouped = groupBy(implemented, (k) => k);
-        // implemented the same thing multiple times
-        for (const entry of Object.entries(grouped)) {
-          if (entry[1].length === 1) {
-            continue;
-          }
+      if (warnOnImplementSameInterfaceMultipleTimes) {
+        for (const [typeOrInterface, implemented] of Object.entries(
+          typeOrInterface2Implemented
+        )) {
+          if (warnOnImplementSameInterfaceMultipleTimes) {
+            const grouped = groupBy(implemented, (k) => k);
+            // implemented the same thing multiple times
+            for (const entry of Object.entries(grouped)) {
+              if (entry[1].length === 1) {
+                continue;
+              }
 
-          const match = new RegExp(
-            "(?:type|interface) " + typeOrInterface
-          ).exec(text)!;
+              const match = new RegExp(
+                "(?:type|interface) " + typeOrInterface
+              ).exec(text)!;
 
-          let lastFound = match.index + match[0].length;
-          let nextLine = text.indexOf("\n", lastFound);
-          let i = 1;
+              let lastFound = match.index + match[0].length;
+              let nextLine = text.indexOf("\n", lastFound);
+              let i = 1;
 
-          while (
-            text.indexOf(entry[0], lastFound) > -1 &&
-            nextLine > text.indexOf(entry[0], lastFound)
-          ) {
-            const found = text.indexOf(entry[0], lastFound);
-            diagnostics.push(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  document.positionAt(found),
-                  document.positionAt(found + entry[0].length)
-                ),
-                `You implemented "${
-                  entry[0]
-                }" multiple times for "${typeOrInterface}". This is ${i++} / ${
-                  entry[1].length
-                }.`,
-                vscode.DiagnosticSeverity.Error
-              )
-            );
-            lastFound = found + 1;
-          }
-        }
-
-        for (const impl of implemented) {
-          // implementing something that isn't declared in this file
-          if (!typeOrInterface2Implemented[impl]) {
-            const match = new RegExp(
-              "(?:type|interface) " + typeOrInterface
-            ).exec(text)!;
-            diagnostics.push(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  document.positionAt(text.indexOf(impl, match.index)),
-                  document.positionAt(
-                    text.indexOf(impl, match.index) + impl.length
+              while (
+                text.indexOf(entry[0], lastFound) > -1 &&
+                nextLine > text.indexOf(entry[0], lastFound)
+              ) {
+                const found = text.indexOf(entry[0], lastFound);
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    new vscode.Range(
+                      document.positionAt(found),
+                      document.positionAt(found + entry[0].length)
+                    ),
+                    `You implemented "${entry[0]
+                    }" multiple times for "${typeOrInterface}". This is ${i++} / ${entry[1].length
+                    }.`,
+                    vscode.DiagnosticSeverity.Error
                   )
-                ),
-                `You implemented "${impl}", but it's not in this file.`,
-                vscode.DiagnosticSeverity.Error
-              )
-            );
-            continue;
+                );
+                lastFound = found + 1;
+              }
+            }
           }
 
-          let difference = typeOrInterface2Implemented[impl].filter(
-            (x) => !implemented.includes(x)
-          );
-          // if (typeOrInterface === "ASTString") {
-          //   console.log([impl, difference]);
-          // }
-          if (difference.length > 0) {
-            const match = new RegExp(
-              "(?:type|interface) " + typeOrInterface
-            ).exec(text)!;
-            diagnostics.push(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  document.positionAt(match.index),
-                  document.positionAt(match.index + match[0].length)
-                ),
-                `You forgot to also implement ${difference
-                  .map((x) => `"${x}"`)
-                  .join(", ")} that "${impl}" implements.`,
-                vscode.DiagnosticSeverity.Error
-              )
-            );
+          for (const impl of implemented) {
+            // implementing something that isn't declared in this file
+            if (!typeOrInterface2Implemented[impl]) {
+              if (warnOnForgetToImplementingNonExistant) {
+                const match = new RegExp(
+                  "(?:type|interface) " + typeOrInterface
+                ).exec(text)!;
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    new vscode.Range(
+                      document.positionAt(text.indexOf(impl, match.index)),
+                      document.positionAt(
+                        text.indexOf(impl, match.index) + impl.length
+                      )
+                    ),
+                    `You implemented "${impl}", but it's not in this file.`,
+                    vscode.DiagnosticSeverity.Error
+                  )
+                );
+              }
+              continue;
+            }
+
+            if (warnOnForgetToFullyImplementDependents) {
+              let difference = typeOrInterface2Implemented[impl].filter(
+                (x) => !implemented.includes(x)
+              );
+              if (difference.length > 0) {
+                const match = new RegExp(
+                  "(?:type|interface) " + typeOrInterface
+                ).exec(text)!;
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    new vscode.Range(
+                      document.positionAt(match.index),
+                      document.positionAt(match.index + match[0].length)
+                    ),
+                    `You forgot to also implement ${difference
+                      .map((x) => `"${x}"`)
+                      .join(", ")} that "${impl}" implements.`,
+                    vscode.DiagnosticSeverity.Error
+                  )
+                );
+              }
+            }
           }
+        }
+
+      if (warnOnMispellings) {
+        let lastOutputMispelled = 0;
+        while (text.indexOf("@ouput", lastOutputMispelled) > -1) {
+          const found = text.indexOf("@ouput", lastOutputMispelled);
+          diagnostics.push(
+            new vscode.Diagnostic(
+              new vscode.Range(
+                document.positionAt(found),
+                document.positionAt(found + "@ouput".length)
+              ),
+              `Looks like you misspelled @output as @ouput.`,
+              vscode.DiagnosticSeverity.Error
+            )
+          );
+          lastOutputMispelled = found + 1;
         }
       }
 
-      let lastOutputMispelled = 0;
-      while (text.indexOf("@ouput", lastOutputMispelled) > -1) {
-        const found = text.indexOf("@ouput", lastOutputMispelled);
-        diagnostics.push(
-          new vscode.Diagnostic(
-            new vscode.Range(
-              document.positionAt(found),
-              document.positionAt(found + "@ouput".length)
-            ),
-            `Looks like you misspelled @output as @ouput.`,
-            vscode.DiagnosticSeverity.Error
-          )
-        );
-        lastOutputMispelled = found + 1;
-      }
-
-      if (/.+queries.+\.ron/.test(document.fileName)) {
+      if (
+        warnOnNoCoorespondingArgumentForUsedArgument &&
+        /.+queries.+\.ron/.test(document.fileName)
+      ) {
         const matched: string[] = [
           ...new Set(
             [

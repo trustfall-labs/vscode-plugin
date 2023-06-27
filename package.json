@@ -26,6 +26,26 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/Disable warning for not fully implementing dependents."
+        },
+        "trustfall-linter.warnOnForgetToImplementingNonExistant": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable warning for not implementing nonexistant interfaces."
+        },
+        "trustfall-linter.warnOnMispellings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable warning for mispellings."
+        },
+        "trustfall-linter.warnOnNoCoorespondingArgumentForUsedArgument": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable warning for mispellings."
+        },
+        "trustfall-linter.warnOnImplementSameInterfaceMultipleTimes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable warning for implementing the same interface multiple times."
         }
       }
     }
