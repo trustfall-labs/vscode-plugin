@@ -1,6 +1,7 @@
 {
   "name": "trustfall-linter",
   "displayName": "trustfall-linter",
+  "publisher": "trustfall",
   "description": "",
   "version": "0.0.1",
   "repository": {
