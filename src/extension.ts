@@ -1,8 +1,6 @@
 import { inspect } from "util";
 import * as vscode from "vscode";
 
-let regex = /(type|interface) (.+)( implements ((?:& )?.+))? {/g;
-
 function groupBy<T, K extends string>(list: T[], keyGetter: (obj: T) => K) {
   const map = {} as Record<K, T[]>;
   list.forEach((item) => {
@@ -46,7 +44,9 @@ export function activate(context: vscode.ExtensionContext) {
         .get("warnOnImplementSameInterfaceMultipleTimes");
 
       const typeOrInterface2Implemented: Record<string, string[]> = {};
-      for (const stmt of text.match(regex) ?? []) {
+      for (const stmt of text.match(
+        /(type|interface) ([a-zA-Z0-9_]+)( implements ((?:& )?.+))? {/g
+      ) ?? []) {
         typeOrInterface2Implemented[
           stmt.match(/^(?:type|interface) ([a-zA-Z0-9_]+) /)![1]
         ] = stmt.match(/implements ([\w\s&]+) {/)?.[1]?.split(" & ") ?? [];
