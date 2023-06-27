@@ -28,9 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
       const warnOnForgetToFullyImplementDependents = vscode.workspace
         .getConfiguration("trustfall-linter")
         .get("warnOnForgetToFullyImplementDependents");
-      const warnOnForgetToImplementingNonExistant = vscode.workspace
+      const warnOnImplementingNonExistant = vscode.workspace
         .getConfiguration("trustfall-linter")
-        .get("warnOnForgetToImplementingNonExistant");
+        .get("warnOnImplementingNonExistant");
       const warnOnMispellings = vscode.workspace
         .getConfiguration("trustfall-linter")
         .get("warnOnMispellings");
@@ -96,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
           for (const impl of implemented) {
             // implementing something that isn't declared in this file
             if (!typeOrInterface2Implemented[impl]) {
-              if (warnOnForgetToImplementingNonExistant) {
+              if (warnOnImplementingNonExistant) {
                 const match = new RegExp(
                   "(?:type|interface) " + typeOrInterface
                 ).exec(text)!;

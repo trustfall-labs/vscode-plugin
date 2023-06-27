@@ -27,7 +27,7 @@
           "default": true,
           "description": "Enable/Disable warning for not fully implementing dependents."
         },
-        "trustfall-linter.warnOnForgetToImplementingNonExistant": {
+        "trustfall-linter.warnOnImplementingNonExistant": {
           "type": "boolean",
           "default": true,
           "description": "Enable/Disable warning for not implementing nonexistant interfaces."
