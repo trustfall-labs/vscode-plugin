@@ -3,6 +3,9 @@
   "displayName": "trustfall-linter",
   "description": "",
   "version": "0.0.1",
+  "repository": {
+    "url": "https://github.com/trustfall-labs/vscode-plugin"
+  },
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -10,7 +13,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
