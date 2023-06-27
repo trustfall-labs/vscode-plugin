@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import * as vscode from "vscode";
 
 let regex = /(type|interface) (.+)( implements ((?:& )?.+))? {/g;
@@ -216,7 +217,7 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         doCheck();
       } catch (e) {
-        outputChannel.append(JSON.stringify(e));
+        outputChannel.append(inspect(e) + "\n");
       }
     },
     null,
@@ -227,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         doCheck();
       } catch (e) {
-        outputChannel.append(JSON.stringify(e));
+        outputChannel.append(inspect(e) + "\n");
       }
     },
     null,
@@ -274,14 +275,14 @@ export function activate(context: vscode.ExtensionContext) {
     try {
       trimExcessWhitespace();
     } catch (e) {
-      outputChannel.append(JSON.stringify(e));
+      outputChannel.append(inspect(e) + "\n");
     }
   });
 
   try {
     doCheck(); // run on startup
   } catch (e) {
-    outputChannel.append(JSON.stringify(e));
+    outputChannel.append(inspect(e) + "\n");
   }
 }
 
