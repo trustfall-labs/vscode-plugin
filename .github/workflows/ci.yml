@@ -78,6 +78,8 @@ jobs:
       - ci-everything
     if: needs.should-publish.outputs.is_new_version == 'yes' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/publish.yml
+    permissions:
+      contents: write
     secrets:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
       VS_MARKETPLACE_TOKEN: ${{ secrets.VS_MARKETPLACE_TOKEN }}
