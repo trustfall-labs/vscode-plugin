@@ -21,7 +21,7 @@ STDERR="$(cat /tmp/git-fetch-stderr.log)"
 if [[ "$STDERR" == "fatal: couldn't find remote ref v$CURRENT_VERSION" ]]; then
     # Tag does not already exist.
     exit 0
-elif [[ "$EXIT_CODE" == "$0" ]]; then
+elif [[ "$EXIT_CODE" == "0" ]]; then
     # Tag already exists.
     exit 7
 else
