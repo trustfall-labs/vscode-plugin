@@ -3,7 +3,7 @@
   "displayName": "trustfall-linter",
   "publisher": "trustfall",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "repository": {
     "url": "https://github.com/trustfall-labs/vscode-plugin"
