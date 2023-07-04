@@ -183,7 +183,7 @@ export function activate(context: vscode.ExtensionContext) {
         for (const filter of matched) {
           if (filter.charAt(0) === "$") {
             const filterRE = new RegExp(
-              `"${filter.substring(1)}": [a-zA-Z0-9_]+\\([a-zA-Z0-9_"]+\\),?\n` // substring(1) to get rid of '$'
+              `"${filter.substring(1)}": [a-zA-Z0-9_]+\\(.+\\),?\n` // substring(1) to get rid of '$'
             );
             if (text.match(filterRE) === null) {
               let lastMatch = 0;
